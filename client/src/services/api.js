@@ -3,7 +3,9 @@ export async function fetchKanji({ level = "N5", shuffle = true, limit } = {}) {
     const params = new URLSearchParams({ level, shuffle: String(shuffle) });
     if (limit) params.set("limit", String(limit));
 
-    const res = await fetch(`/api/kanji?${params.toString()}`);
+    const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/kanji?${params.toString()}`
+    );
     if (!res.ok) {
         throw new Error("Không lấy được dữ liệu kanji từ server");
     }
