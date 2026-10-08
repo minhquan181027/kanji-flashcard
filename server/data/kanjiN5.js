@@ -107,3 +107,12 @@ const kanjiN5 = [
 ];
 
 module.exports = kanjiN5;
+
+
+
+
+
+
+
+
+
