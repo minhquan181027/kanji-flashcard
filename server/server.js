@@ -1,12 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 
-const kanjiN5 = require("./data/kanjiN5.js");
+const kanjiN5 = require("./data/kanjiN5");
+const vocabUnits = require("./data/vocabulary");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Gom dữ liệu theo cấp độ. Sau này thêm N4, N3... chỉ cần thêm vào đây.
+// Gom dữ liệu kanji theo cấp độ. Sau này thêm N4, N3... chỉ cần thêm vào đây.
 const KANJI_BY_LEVEL = {
     N5: kanjiN5,
 };
@@ -24,12 +25,27 @@ function shuffle(array) {
     return result;
 }
 
-// Kiểm tra server còn sống
+// Gắn id theo vị trí trong mảng gốc (để React dùng làm key), rồi xáo/cắt nếu cần
+function prepareList(source, query) {
+    let result = source.map((item, i) => ({ id: i + 1, ...item }));
+
+    if (query.shuffle === "true") result = shuffle(result);
+
+    const limit = parseInt(query.limit, 10);
+    if (!Number.isNaN(limit) && limit > 0) result = result.slice(0, limit);
+
+    return result;
+}
+
+// ---------- Chung ----------
+
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
 });
 
-// Danh sách cấp độ đang có
+// ---------- Kanji ----------
+
+// Danh sách cấp độ kanji đang có
 app.get("/api/levels", (req, res) => {
     const levels = Object.keys(KANJI_BY_LEVEL).map((level) => ({
         level,
@@ -38,7 +54,6 @@ app.get("/api/levels", (req, res) => {
     res.json(levels);
 });
 
-// Lấy kanji theo cấp độ
 // VD: GET /api/kanji?level=N5&shuffle=true&limit=20
 app.get("/api/kanji", (req, res) => {
     const level = (req.query.level || "N5").toUpperCase();
@@ -48,25 +63,35 @@ app.get("/api/kanji", (req, res) => {
         return res.status(404).json({ error: `Chưa có dữ liệu cho cấp độ ${level}` });
     }
 
-    let result = req.query.shuffle === "true" ? shuffle(data) : [...data];
-
-    const limit = parseInt(req.query.limit, 10);
-    if (!Number.isNaN(limit) && limit > 0) {
-        result = result.slice(0, limit);
-    }
-
-    // Thêm id theo vị trí trong mảng gốc để React dùng làm key
-    const withId = result.map((item) => ({
-        id: data.indexOf(item) + 1,
-        ...item,
-    }));
-
-    res.json(withId);
+    res.json(prepareList(data, req.query));
 });
 
-app.get("/", (req, res) => {
+// ---------- Từ vựng theo Unit ----------
+
+// Danh sách Unit (không kèm danh sách từ)
+app.get("/api/vocab/units", (req, res) => {
+    const list = vocabUnits.map((u) => ({
+        id: u.id,
+        title: u.title,
+        description: u.description,
+        total: u.words.length,
+    }));
+    res.json(list);
+});
+
+// VD: GET /api/vocab/units/unit3?shuffle=true
+app.get("/api/vocab/units/:unitId", (req, res) => {
+    const unit = vocabUnits.find((u) => u.id === req.params.unitId);
+
+    if (!unit) {
+        return res.status(404).json({ error: `Không tìm thấy ${req.params.unitId}` });
+    }
+
     res.json({
-        message: "Kanji Flashcard API is running!"
+        id: unit.id,
+        title: unit.title,
+        description: unit.description,
+        words: prepareList(unit.words, req.query),
     });
 });
 

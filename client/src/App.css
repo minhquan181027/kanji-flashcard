@@ -9,12 +9,84 @@ body {
     color: #2b2b2b;
 }
 
+/* ---------- Layout ---------- */
 .app {
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
+}
+
+.main {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 24px 20px;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #2b2b2b;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.brand-mark {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #c0392b;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1.2rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 6px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #555;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.nav-link:hover {
+    background: #f0ece4;
+}
+
+.nav-link.active {
+    background: #fbe9e7;
+    color: #c0392b;
 }
 
 /* ---------- Buttons ---------- */
@@ -35,6 +107,11 @@ body {
 
 .btn:active {
     transform: scale(0.97);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 .btn-primary {
@@ -77,25 +154,86 @@ body {
     font-size: 0.9rem;
 }
 
-/* ---------- Home ---------- */
-.home {
+/* ---------- Trang chủ / menu ---------- */
+.home,
+.page-menu {
     text-align: center;
 }
 
 .home-kanji {
-    font-size: 6rem;
+    font-size: 5rem;
     color: #c0392b;
     line-height: 1;
 }
 
-.home h1 {
+.home h1,
+.page-menu h1 {
     margin: 10px 0 4px;
     font-size: 2rem;
 }
 
 .subtitle {
     color: #777;
-    margin-bottom: 28px;
+    margin: 0 auto 28px;
+    max-width: 420px;
+}
+
+.home-cards,
+.unit-list {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.menu-card {
+    display: block;
+    width: 240px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    text-decoration: none;
+    color: #2b2b2b;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.menu-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    border-color: #c0392b;
+}
+
+.menu-card-icon {
+    font-size: 3rem;
+    color: #c0392b;
+    line-height: 1;
+}
+
+.menu-card h3 {
+    margin: 10px 0 6px;
+    font-size: 1.3rem;
+}
+
+.menu-card p {
+    margin: 0;
+    color: #777;
+    font-size: 0.95rem;
+}
+
+.unit-count {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #c0392b;
+    background: #fbe9e7;
+    padding: 3px 10px;
+    border-radius: 10px;
 }
 
 /* ---------- Practice ---------- */
@@ -104,6 +242,10 @@ body {
     width: 100%;
     max-width: 420px;
     text-align: center;
+}
+
+.practice--wide {
+    max-width: 460px;
 }
 
 .top-bar {
@@ -116,6 +258,12 @@ body {
 .counter {
     color: #777;
     font-weight: 600;
+}
+
+.batch-info {
+    color: #777;
+    font-size: 0.9rem;
+    margin: 0 0 10px;
 }
 
 .progress {
@@ -149,6 +297,10 @@ body {
     outline: none;
 }
 
+.flashcard--tall {
+    height: 460px;
+}
+
 .flashcard-inner {
     position: relative;
     width: 100%;
@@ -170,25 +322,22 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
     background: #fff;
     border-radius: 20px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     padding: 20px;
+    overflow-y: auto;
 }
 
 .flashcard-back {
     transform: rotateY(180deg);
 }
 
+/* Kanji */
 .kanji-big {
     font-size: 8rem;
     line-height: 1;
-}
-
-.hint {
-    color: #aaa;
-    font-size: 0.9rem;
 }
 
 .kanji-small {
@@ -203,9 +352,67 @@ body {
     letter-spacing: 2px;
 }
 
+/* Từ vựng */
+.word-big {
+    line-height: 1.2;
+    text-align: center;
+    word-break: break-all;
+}
+
+.emoji {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.reading {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #c0392b;
+}
+
+.romaji {
+    font-size: 1rem;
+    color: #999;
+    font-style: italic;
+}
+
+.example {
+    width: 100%;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px dashed #ddd;
+    text-align: left;
+}
+
+.example p {
+    margin: 4px 0;
+}
+
+.ex-jp {
+    font-size: 1.5rem;
+    line-height: 1.4;
+}
+
+.ex-romaji {
+    font-size: 1.05rem;
+    color: #999;
+    font-style: italic;
+}
+
+.ex-vi {
+    font-size: 1.15rem;
+    color: #2e8b57;
+}
+
+.hint {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
 .meaning {
     font-size: 1.4rem;
     color: #444;
+    text-align: center;
 }
 
 /* ---------- Result ---------- */
@@ -235,7 +442,7 @@ body {
 }
 
 .chip {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     background: #fff;
     border-radius: 8px;
     padding: 4px 10px;
@@ -245,6 +452,7 @@ body {
 /* ---------- Status ---------- */
 .status {
     text-align: center;
+    color: #777;
 }
 
 .status .btn {
@@ -264,11 +472,32 @@ body {
     .flashcard {
         height: 280px;
     }
+
+    .flashcard--tall {
+        height: 440px;
+    }
+
+    .brand-text {
+        font-size: 1rem;
+    }
+
+    .nav-link {
+        padding: 8px 10px;
+    }
 }
 
-/* ---------- Thông tin nhóm / vòng ---------- */
-.batch-info {
-    color: #777;
-    font-size: 0.9rem;
-    margin: 0 0 10px;
+/* Hiragana ở mặt trước thẻ từ vựng */
+.front-reading {
+    font-size: 1.6rem;
+    color: #c0392b;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Hiragana ở mặt trước thẻ từ vựng */
+.front-reading {
+    font-size: 1.6rem;
+    color: #c0392b;
+    font-weight: 600;
+    letter-spacing: 1px;
 }

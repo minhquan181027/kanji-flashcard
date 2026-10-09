@@ -1,14 +1,21 @@
-import { useState } from "react";
-import Home from "./components/Home";
-import Practice from "./components/Practice";
+import { Navigate, Route, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import HomePage from "./pages/HomePage";
+import KanjiPage from "./pages/KanjiPage";
+import VocabPage from "./pages/VocabPage";
 
 export default function App() {
-    const [page, setPage] = useState("home"); // "home" | "practice"
-
     return (
         <div className="app">
-            {page === "home" && <Home onStart={() => setPage("practice")} />}
-            {page === "practice" && <Practice onBack={() => setPage("home")} />}
+            <Navbar />
+            <main className="main">
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/kanji" element={<KanjiPage />} />
+                    <Route path="/vocabulary" element={<VocabPage />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </main>
         </div>
     );
 }

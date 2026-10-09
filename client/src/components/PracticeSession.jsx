@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchKanji } from "../services/api";
 import Flashcard from "./Flashcard";
-
-const BATCH_SIZE = 20; // mỗi nhóm luyện 20 từ
 
 // Xáo trộn mảng, không làm đổi mảng gốc
 function shuffle(array) {
@@ -14,19 +11,36 @@ function shuffle(array) {
     return result;
 }
 
-export default function Practice({ onBack }) {
-    const [allCards, setAllCards] = useState([]); // toàn bộ kanji đã xáo trộn
-    const [offset, setOffset] = useState(0);      // số từ đã thuộc ở các nhóm trước
-    const [round, setRound] = useState(1);        // vòng luyện trong nhóm hiện tại
-    const [cards, setCards] = useState([]);       // các thẻ của vòng hiện tại
+/**
+ * Phiên luyện flashcard dùng chung cho Kanji và Từ vựng.
+ *
+ * Props:
+ *  - cards:       mảng thẻ, mỗi thẻ có `id`
+ *  - batchSize:   số thẻ mỗi nhóm
+ *  - renderFront: (card) => nội dung mặt trước
+ *  - renderBack:  (card) => nội dung mặt sau
+ *  - onExit:      gọi khi bấm Thoát / Về menu
+ *  - tall:        thẻ cao hơn (cho từ vựng có câu ví dụ)
+ */
+export default function PracticeSession({
+    cards: sourceCards,
+    batchSize = 20,
+    renderFront,
+    renderBack,
+    onExit,
+    tall = false,
+}) {
+    const [initial] = useState(() => shuffle(sourceCards));
+
+    const [allCards, setAllCards] = useState(initial);               // toàn bộ thẻ đã xáo
+    const [offset, setOffset] = useState(0);                          // số thẻ đã thuộc ở các nhóm trước
+    const [round, setRound] = useState(1);                            // vòng luyện trong nhóm
+    const [cards, setCards] = useState(() => initial.slice(0, batchSize)); // thẻ của vòng hiện tại
     const [index, setIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [knownCount, setKnownCount] = useState(0);
     const [unknown, setUnknown] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
 
-    // Bắt đầu một vòng luyện với danh sách thẻ cho trước
     const startRound = useCallback((list, roundNo) => {
         setCards(list);
         setRound(roundNo);
@@ -36,33 +50,19 @@ export default function Practice({ onBack }) {
         setUnknown([]);
     }, []);
 
-    // Bắt đầu một nhóm 20 từ mới, tính từ vị trí newOffset
     const startBatch = useCallback(
         (all, newOffset) => {
             setOffset(newOffset);
-            startRound(all.slice(newOffset, newOffset + BATCH_SIZE), 1);
+            startRound(all.slice(newOffset, newOffset + batchSize), 1);
         },
-        [startRound]
+        [startRound, batchSize]
     );
 
-    // Tải toàn bộ kanji N5 từ server rồi bắt đầu nhóm đầu tiên
-    const loadAll = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError("");
-            const data = await fetchKanji({ level: "N5", shuffle: true });
-            setAllCards(data);
-            startBatch(data, 0);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [startBatch]);
-
-    useEffect(() => {
-        loadAll();
-    }, [loadAll]);
+    const restart = () => {
+        const reshuffled = shuffle(sourceCards);
+        setAllCards(reshuffled);
+        startBatch(reshuffled, 0);
+    };
 
     const finished = cards.length > 0 && index >= cards.length;
     const current = cards[index];
@@ -89,30 +89,17 @@ export default function Practice({ onBack }) {
         setIndex((i) => i + 1);
     };
 
-    if (loading) return <p className="status">Đang tải...</p>;
-
-    if (error) {
-        return (
-            <div className="status">
-                <p className="error">{error}</p>
-                <p>Kiểm tra server đã chạy ở cổng 5000 chưa.</p>
-                <button className="btn btn-primary" onClick={loadAll}>Thử lại</button>
-                <button className="btn" onClick={onBack}>Về trang chủ</button>
-            </div>
-        );
-    }
-
     const total = allCards.length;
-    const batchNo = Math.floor(offset / BATCH_SIZE) + 1;
-    const totalBatches = Math.ceil(total / BATCH_SIZE);
+    const batchNo = Math.floor(offset / batchSize) + 1;
+    const totalBatches = Math.ceil(total / batchSize);
 
     // ---------- Màn hình kết quả cuối vòng ----------
     if (finished) {
         const allKnown = unknown.length === 0;
-        const batchEnd = offset + BATCH_SIZE;
+        const batchEnd = offset + batchSize;
         const hasMore = batchEnd < total;
-        const learned = Math.min(batchEnd, total); // số từ đã thuộc sau nhóm này
-        const nextCount = Math.min(BATCH_SIZE, total - batchEnd);
+        const learned = Math.min(batchEnd, total);
+        const nextCount = Math.min(batchSize, total - batchEnd);
 
         return (
             <div className="result">
@@ -128,18 +115,16 @@ export default function Practice({ onBack }) {
                 </p>
 
                 {allKnown && (
-                    <p className="batch-info">
-                        Đã thuộc {learned} / {total} từ
-                    </p>
+                    <p className="batch-info">Đã thuộc {learned} / {total}</p>
                 )}
 
                 {!allKnown && (
                     <>
-                        <p className="batch-info">Luyện lại các từ này cho đến khi thuộc hết:</p>
+                        <p className="batch-info">Luyện lại các thẻ này cho đến khi thuộc hết:</p>
                         <div className="unknown-list">
                             {unknown.map((c) => (
-                                <span key={c.id} className="chip" title={`${c.hanViet} - ${c.meaning}`}>
-                                    {c.kanji}
+                                <span key={c.id} className="chip">
+                                    {c.kanji ?? c.word}
                                 </span>
                             ))}
                         </div>
@@ -152,26 +137,23 @@ export default function Practice({ onBack }) {
                             className="btn btn-primary"
                             onClick={() => startRound(shuffle(unknown), round + 1)}
                         >
-                            Luyện lại {unknown.length} từ chưa thuộc
+                            Luyện lại {unknown.length} thẻ chưa thuộc
                         </button>
                     )}
 
                     {allKnown && hasMore && (
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => startBatch(allCards, batchEnd)}
-                        >
-                            Tiếp tục ({nextCount} từ tiếp theo)
+                        <button className="btn btn-primary" onClick={() => startBatch(allCards, batchEnd)}>
+                            Tiếp tục ({nextCount} thẻ tiếp theo)
                         </button>
                     )}
 
                     {allKnown && !hasMore && (
-                        <button className="btn btn-primary" onClick={loadAll}>
+                        <button className="btn btn-primary" onClick={restart}>
                             Học lại từ đầu
                         </button>
                     )}
 
-                    <button className="btn" onClick={onBack}>Trang chủ</button>
+                    <button className="btn" onClick={onExit}>Về menu</button>
                 </div>
             </div>
         );
@@ -181,14 +163,14 @@ export default function Practice({ onBack }) {
     const percent = Math.round((index / cards.length) * 100);
 
     return (
-        <div className="practice">
+        <div className={`practice ${tall ? "practice--wide" : ""}`}>
             <div className="top-bar">
-                <button className="btn btn-small" onClick={onBack}>← Thoát</button>
+                <button className="btn btn-small" onClick={onExit}>← Thoát</button>
                 <span className="counter">{index + 1} / {cards.length}</span>
             </div>
 
             <p className="batch-info">
-                Nhóm {batchNo}/{totalBatches} · Vòng {round} · Đã thuộc {offset}/{total} từ
+                Nhóm {batchNo}/{totalBatches} · Vòng {round} · Đã thuộc {offset}/{total}
             </p>
 
             <div className="progress">
@@ -196,7 +178,14 @@ export default function Practice({ onBack }) {
             </div>
 
             {/* key để mỗi thẻ mới được tạo lại, tránh thấy nghĩa thẻ mới khi đang lật về */}
-            <Flashcard key={`${round}-${current.id}`} card={current} flipped={flipped} onFlip={flip} />
+            <Flashcard
+                key={`${round}-${current.id}`}
+                front={renderFront(current)}
+                back={renderBack(current)}
+                flipped={flipped}
+                onFlip={flip}
+                tall={tall}
+            />
 
             <div className="actions">
                 {flipped ? (
