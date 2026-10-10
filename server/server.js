@@ -7,9 +7,17 @@ const vocabUnits = require("./data/vocabulary");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Gom dữ liệu kanji theo cấp độ. Sau này thêm N4, N3... chỉ cần thêm vào đây.
+// Các cấp độ JLPT hợp lệ (dùng cho Kanji)
+const LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+
+// Dữ liệu kanji theo cấp độ. Cấp nào chưa có thì để trống,
+// sau này có kanjiN4.js... chỉ cần require rồi gắn vào đây.
 const KANJI_BY_LEVEL = {
     N5: kanjiN5,
+    N4: [],
+    N3: [],
+    N2: [],
+    N1: [],
 };
 
 app.use(cors());
@@ -37,46 +45,54 @@ function prepareList(source, query) {
     return result;
 }
 
+// Đọc và kiểm tra tham số level. Trả về null nếu không hợp lệ.
+function parseLevel(value, fallback) {
+    const level = String(value || fallback || "").toUpperCase();
+    return LEVELS.includes(level) ? level : null;
+}
+
 // ---------- Chung ----------
 
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
 });
 
-// ---------- Kanji ----------
+// ---------- Kanji (theo cấp độ N5 → N1) ----------
 
-// Danh sách cấp độ kanji đang có
+// Tổng quan số kanji từng cấp độ
 app.get("/api/levels", (req, res) => {
-    const levels = Object.keys(KANJI_BY_LEVEL).map((level) => ({
-        level,
-        total: KANJI_BY_LEVEL[level].length,
-    }));
-    res.json(levels);
+    res.json(
+        LEVELS.map((level) => ({
+            level,
+            kanjiTotal: KANJI_BY_LEVEL[level].length,
+        }))
+    );
 });
 
 // VD: GET /api/kanji?level=N5&shuffle=true&limit=20
+// Cấp độ hợp lệ nhưng chưa có dữ liệu sẽ trả về mảng rỗng.
 app.get("/api/kanji", (req, res) => {
-    const level = (req.query.level || "N5").toUpperCase();
-    const data = KANJI_BY_LEVEL[level];
+    const level = parseLevel(req.query.level, "N5");
 
-    if (!data) {
-        return res.status(404).json({ error: `Chưa có dữ liệu cho cấp độ ${level}` });
+    if (!level) {
+        return res.status(404).json({ error: `Cấp độ không hợp lệ: ${req.query.level}` });
     }
 
-    res.json(prepareList(data, req.query));
+    res.json(prepareList(KANJI_BY_LEVEL[level], req.query));
 });
 
-// ---------- Từ vựng theo Unit ----------
+// ---------- Từ vựng (theo Unit 1, Unit 2, ...) ----------
 
 // Danh sách Unit (không kèm danh sách từ)
 app.get("/api/vocab/units", (req, res) => {
-    const list = vocabUnits.map((u) => ({
-        id: u.id,
-        title: u.title,
-        description: u.description,
-        total: u.words.length,
-    }));
-    res.json(list);
+    res.json(
+        vocabUnits.map((u) => ({
+            id: u.id,
+            title: u.title,
+            description: u.description,
+            total: u.words.length,
+        }))
+    );
 });
 
 // VD: GET /api/vocab/units/unit3?shuffle=true

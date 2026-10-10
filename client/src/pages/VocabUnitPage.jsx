@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import PracticeSession from "../components/PracticeSession";
-import { fetchVocabUnit, fetchVocabUnits } from "../services/api";
+import { fetchVocabUnit } from "../services/api";
 
 // Từ càng dài thì chữ càng nhỏ để vừa thẻ
 function wordSize(word) {
@@ -9,45 +10,38 @@ function wordSize(word) {
     return "2.8rem";
 }
 
-export default function VocabPage() {
-    const [units, setUnits] = useState([]);
-    const [session, setSession] = useState(null); // { title, words } khi đang luyện
-    const [loading, setLoading] = useState(true);
+// Trang /vocabulary/:unitId. Dùng key để đổi Unit là reset sạch trạng thái.
+export default function VocabUnitPage() {
+    const { unitId } = useParams();
+    return <VocabUnit key={unitId} unitId={unitId} />;
+}
+
+function VocabUnit({ unitId }) {
+    const [unit, setUnit] = useState(null); // null = đang tải
+    const [practicing, setPracticing] = useState(false);
     const [error, setError] = useState("");
 
-    const loadUnits = async () => {
+    const load = useCallback(async () => {
         try {
-            setLoading(true);
             setError("");
-            setUnits(await fetchVocabUnits());
+            setUnit(null);
+            setUnit(await fetchVocabUnit(unitId));
         } catch (err) {
             setError(err.message);
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [unitId]);
 
     useEffect(() => {
-        loadUnits();
-    }, []);
+        load();
+    }, [load]);
 
-    const startUnit = async (unitId) => {
-        try {
-            setError("");
-            const unit = await fetchVocabUnit(unitId);
-            setSession(unit);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-
-    if (session) {
+    if (practicing && unit) {
         return (
             <PracticeSession
-                cards={session.words}
+                cards={unit.words}
                 batchSize={10}
                 tall
-                onExit={() => setSession(null)}
+                onExit={() => setPracticing(false)}
                 renderFront={(w) => (
                     <>
                         {/* Không hiện hiragana nếu từ đã viết bằng hiragana (うち, いくら) */}
@@ -80,27 +74,29 @@ export default function VocabPage() {
 
     return (
         <div className="page-menu">
-            <h1>Từ vựng</h1>
-            <p className="subtitle">Chọn một Unit để luyện</p>
-
-            {loading && <p className="status">Đang tải...</p>}
-
             {error && (
                 <div className="status">
+                    <h1>Từ vựng</h1>
                     <p className="error">{error}</p>
-                    <button className="btn btn-primary" onClick={loadUnits}>Thử lại</button>
+                    <button className="btn btn-primary" onClick={load}>Thử lại</button>
+                    <Link to="/vocabulary" className="btn">Xem danh sách Unit</Link>
                 </div>
             )}
 
-            <div className="unit-list">
-                {units.map((u) => (
-                    <button key={u.id} className="menu-card unit-card" onClick={() => startUnit(u.id)}>
-                        <h3>{u.title}</h3>
-                        <p>{u.description}</p>
-                        <span className="unit-count">{u.total} từ</span>
+            {!error && unit === null && <p className="status">Đang tải...</p>}
+
+            {!error && unit && (
+                <>
+                    <h1>Từ vựng {unit.title}</h1>
+                    <p className="subtitle">
+                        {unit.description} · {unit.words.length} từ. Mỗi lượt luyện 10 từ, chưa thuộc thì
+                        luyện lại, thuộc rồi thì học tiếp.
+                    </p>
+                    <button className="btn btn-primary btn-big" onClick={() => setPracticing(true)}>
+                        Bắt đầu luyện tập
                     </button>
-                ))}
-            </div>
+                </>
+            )}
         </div>
     );
 }

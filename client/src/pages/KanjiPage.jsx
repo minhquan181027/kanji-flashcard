@@ -1,38 +1,54 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import PracticeSession from "../components/PracticeSession";
+
 import { fetchKanji } from "../services/api";
 
+// Lấy cấp độ từ URL (/kanji/n5) rồi giao cho KanjiLevel.
+// Dùng key={level} để đổi cấp độ là reset sạch trạng thái.
 export default function KanjiPage() {
-    const [cards, setCards] = useState(null); // null = đang ở màn hình menu
-    const [loading, setLoading] = useState(false);
+    const { level } = useParams();
+    const lv = (level || "").toUpperCase();
+    const LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+    if (!LEVELS.includes(lv)) return <Navigate to="/kanji/n5" replace />;
+    return <KanjiLevel key={lv} level={lv} />;
+}
+
+function KanjiLevel({ level }) {
+    const [data, setData] = useState(null); // null = đang tải
+    const [practicing, setPracticing] = useState(false);
     const [error, setError] = useState("");
 
-    const start = async () => {
+    const load = useCallback(async () => {
         try {
-            setLoading(true);
             setError("");
-            const data = await fetchKanji({ level: "N5", shuffle: true });
-            setCards(data);
+            setData(null);
+            setData(await fetchKanji({ level, shuffle: true }));
         } catch (err) {
             setError(err.message);
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [level]);
 
-    if (cards) {
+    useEffect(() => {
+        load();
+    }, [load]);
+
+    if (practicing && data) {
         return (
             <PracticeSession
-                cards={cards}
+                cards={data}
                 batchSize={20}
-                onExit={() => setCards(null)}
+                tall
+                onExit={() => setPracticing(false)}
                 renderFront={(card) => <span className="kanji-big">{card.kanji}</span>}
                 renderBack={(card) => (
                     <>
+                        {/* Phần đầu: kanji nhỏ + Hán Việt + nghĩa */}
                         <span className="kanji-small">{card.kanji}</span>
                         <span className="han-viet">{card.hanViet}</span>
                         <span className="meaning">{card.meaning}</span>
 
+                        {/* Từ vựng đi kèm */}
                         {card.vocabulary && (
                             <div className="back-section">
                                 <span className="section-label">Từ vựng</span>
@@ -40,6 +56,7 @@ export default function KanjiPage() {
                             </div>
                         )}
 
+                        {/* Câu ví dụ */}
                         {card.example && (
                             <div className="back-section">
                                 <span className="section-label">Ví dụ</span>
@@ -56,14 +73,31 @@ export default function KanjiPage() {
 
     return (
         <div className="page-menu">
-            <h1>Kanji N5</h1>
-            <p className="subtitle">Mỗi lượt luyện 20 chữ. Chưa thuộc thì luyện lại, thuộc rồi thì học tiếp.</p>
+            <h1>Kanji {level}</h1>
 
-            {error && <p className="error">{error}</p>}
+            {error && (
+                <div className="status">
+                    <p className="error">{error}</p>
+                    <button className="btn btn-primary" onClick={load}>Thử lại</button>
+                </div>
+            )}
 
-            <button className="btn btn-primary btn-big" onClick={start} disabled={loading}>
-                {loading ? "Đang tải..." : "Bắt đầu luyện tập"}
-            </button>
+            {!error && data === null && <p className="status">Đang tải...</p>}
+
+            {!error && data && data.length === 0 && (
+                <p className="status">Chưa có dữ liệu Kanji {level}, sẽ được cập nhật sau.</p>
+            )}
+
+            {!error && data && data.length > 0 && (
+                <>
+                    <p className="subtitle">
+                        {data.length} chữ. Mỗi lượt luyện 20 chữ, chưa thuộc thì luyện lại, thuộc rồi thì học tiếp.
+                    </p>
+                    <button className="btn btn-primary btn-big" onClick={() => setPracticing(true)}>
+                        Bắt đầu luyện tập
+                    </button>
+                </>
+            )}
         </div>
     );
 }
