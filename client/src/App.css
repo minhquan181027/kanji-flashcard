@@ -245,7 +245,7 @@ body {
 }
 
 .practice--wide {
-    max-width: 460px;
+    max-width: 540px;
 }
 
 .top-bar {
@@ -298,7 +298,7 @@ body {
 }
 
 .flashcard--tall {
-    height: 460px;
+    height: 580px;
 }
 
 .flashcard-inner {
@@ -321,7 +321,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 10px;
     background: #fff;
     border-radius: 20px;
@@ -334,6 +334,15 @@ body {
     transform: rotateY(180deg);
 }
 
+/* Căn giữa theo chiều dọc khi nội dung ngắn; khi dài thì cuộn từ đầu, không mất phần trên */
+.flashcard-face> :first-child {
+    margin-top: auto;
+}
+
+.flashcard-face> :last-child {
+    margin-bottom: auto;
+}
+
 /* Kanji */
 .kanji-big {
     font-size: 8rem;
@@ -341,8 +350,9 @@ body {
 }
 
 .kanji-small {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     color: #999;
+    line-height: 1.1;
 }
 
 .han-viet {
@@ -474,7 +484,7 @@ body {
     }
 
     .flashcard--tall {
-        height: 440px;
+        height: 600px;
     }
 
     .brand-text {
@@ -500,4 +510,33 @@ body {
     color: #c0392b;
     font-weight: 600;
     letter-spacing: 1px;
+}
+
+/* ---------- Mặt sau thẻ Kanji: các khối nội dung ---------- */
+.back-section {
+    width: 100%;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px dashed #ddd;
+    text-align: left;
+}
+
+.back-section p {
+    margin: 4px 0;
+}
+
+.section-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #c0392b;
+    margin-bottom: 2px;
+}
+
+.vocab-line {
+    font-size: 1.25rem;
+    color: #333;
+    line-height: 1.4;
 }

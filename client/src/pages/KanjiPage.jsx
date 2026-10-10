@@ -32,6 +32,22 @@ export default function KanjiPage() {
                         <span className="kanji-small">{card.kanji}</span>
                         <span className="han-viet">{card.hanViet}</span>
                         <span className="meaning">{card.meaning}</span>
+
+                        {card.vocabulary && (
+                            <div className="back-section">
+                                <span className="section-label">Từ vựng</span>
+                                <p className="vocab-line">{card.vocabulary}</p>
+                            </div>
+                        )}
+
+                        {card.example && (
+                            <div className="back-section">
+                                <span className="section-label">Ví dụ</span>
+                                <p className="ex-jp">{card.example}</p>
+                                {card.romaji && <p className="ex-romaji">{card.romaji}</p>}
+                                {card.translation && <p className="ex-vi">{card.translation}</p>}
+                            </div>
+                        )}
                     </>
                 )}
             />
