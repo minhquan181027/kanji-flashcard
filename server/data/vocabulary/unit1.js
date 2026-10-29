@@ -5,43 +5,43 @@ module.exports = {
     description: "Nơi chốn trong tòa nhà, đồ vật và hỏi giá",
     words: [
         {
-            word: "食堂", hiragana: "しょくどう", romaji: "shokudō", meaning: "nhà ăn",
+            word: "食堂", hiragana: "しょくどう", romaji: "shokudō", meaning: "🍚 — nhà ăn",
             example: { jp: "わたしは 食堂（しょくどう）で ごはんを 食（た）べます。", romaji: "Watashi wa shokudō de gohan o tabemasu.", vi: "Tôi ăn cơm ở nhà ăn." }
         },
         {
-            word: "会議室", hiragana: "かいぎしつ", romaji: "kaigi-shitsu", meaning: "phòng họp",
+            word: "会議室", hiragana: "かいぎしつ", romaji: "kaigi-shitsu", meaning: "🗣️ — phòng họp",
             example: { jp: "会議室（かいぎしつ）は どこですか。", romaji: "Kaigi-shitsu wa doko desu ka.", vi: "Phòng họp ở đâu?" }
         },
         {
-            word: "受付", hiragana: "うけつけ", romaji: "uketsuke", meaning: "quầy tiếp tân, quầy lễ tân",
+            word: "受付", hiragana: "うけつけ", romaji: "uketsuke", meaning: "💁‍♀️ — quầy tiếp tân, quầy lễ tân",
             example: { jp: "受付（うけつけ）は どこですか。", romaji: "Uketsuke wa doko desu ka.", vi: "Quầy tiếp tân ở đâu?" }
         },
         {
-            word: "ロビー", hiragana: "ろびー", romaji: "robī", meaning: "sảnh, tiền sảnh",
+            word: "ロビー", hiragana: "ろびー", romaji: "robī", meaning: "🛋️ — sảnh, tiền sảnh",
             example: { jp: "ロビーで 待（ま）ちます。", romaji: "Robī de machimasu.", vi: "Tôi chờ ở sảnh." }
         },
         {
-            word: "部屋", hiragana: "へや", romaji: "heya", meaning: "căn phòng, phòng",
+            word: "部屋", hiragana: "へや", romaji: "heya", meaning: "🚪 — căn phòng, phòng",
             example: { jp: "私（わたし）の 部屋（へや）は きれいです。", romaji: "Watashi no heya wa kirei desu.", vi: "Phòng của tôi sạch đẹp." }
         },
         {
-            word: "階段", hiragana: "かいだん", romaji: "kaidan", meaning: "cầu thang",
+            word: "階段", hiragana: "かいだん", romaji: "kaidan", meaning: "🪜 — cầu thang",
             example: { jp: "階段（かいだん）は どこですか。", romaji: "Kaidan wa doko desu ka.", vi: "Cầu thang ở đâu?" }
         },
         {
-            word: "エレベーター", hiragana: "えれべーたー", romaji: "erebētā", meaning: "thang máy",
+            word: "エレベーター", hiragana: "えれべーたー", romaji: "erebētā", meaning: "🛗 — thang máy",
             example: { jp: "エレベーターで 10階（じゅっかい）まで 行（い）きます。", romaji: "Erebētā de jukkai made ikimasu.", vi: "Tôi đi thang máy lên tầng 10." }
         },
         {
-            word: "エスカレーター", hiragana: "えすかれーたー", romaji: "esukarētā", meaning: "thang cuốn",
+            word: "エスカレーター", hiragana: "えすかれーたー", romaji: "esukarētā", meaning: "🛗 — thang cuốn",
             example: { jp: "エスカレーターで 2階（にかい）に 行（い）きましょう。", romaji: "Esukarētā de nikai ni ikimashō.", vi: "Chúng ta đi thang cuốn lên tầng 2 nhé." }
         },
         {
-            word: "国", hiragana: "くに", romaji: "kuni", meaning: "đất nước, quốc gia",
+            word: "国", hiragana: "くに", romaji: "kuni", meaning: "🌐 — đất nước, quốc gia",
             example: { jp: "私（わたし）の 国（くに）は ベトナムです。", romaji: "Watashi no kuni wa Betonamu desu.", vi: "Đất nước của tôi là Việt Nam." }
         },
         {
-            word: "うち", hiragana: "うち", romaji: "uchi", meaning: "nhà, nhà mình; bên mình; công ty/trường của mình",
+            word: "うち", hiragana: "うち", romaji: "uchi", meaning: "🏠 — nhà, nhà mình; bên mình; công ty/trường của mình",
             example: { jp: "うちは ベトナムの会社（かいしゃ）です。", romaji: "Uchi wa Betonamu no kaisha desu.", vi: "Công ty bên tôi là một công ty Việt Nam." }
         },
         {

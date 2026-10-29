@@ -3,6 +3,7 @@ const unit2 = require("./unit2");
 const unit3 = require("./unit3");
 const unit4 = require("./unit4");
 const unit5 = require("./unit5");
-const units = [unit1, unit2, unit3, unit4, unit5];
+const unit6 = require("./unit6");
+const units = [unit1, unit2, unit3, unit4, unit5, unit6];
 
 module.exports = units;
