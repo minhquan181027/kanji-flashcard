@@ -1,5 +1,5 @@
 // Từ vựng Unit 1
-module.exports = {
+export default {
     id: "unit1",
     title: "Unit 1",
     description: "Nơi chốn trong tòa nhà, đồ vật và hỏi giá",

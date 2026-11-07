@@ -607,3 +607,153 @@ body {
     text-decoration: none;
     display: inline-block;
 }
+
+/* ======================================================================
+   Phần thêm cho: tài khoản, Ôn tập, badge, thông báo
+   ====================================================================== */
+
+/* ---------- Navbar: khu vực tài khoản ---------- */
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-user {
+    font-weight: 600;
+    color: #555;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Badge số lượng ---------- */
+.badge {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.dropdown-menu {
+    min-width: 170px;
+}
+
+/* ---------- Form đăng nhập / đăng ký ---------- */
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 26px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.auth-card h1 {
+    margin: 0 0 4px;
+    font-size: 1.8rem;
+}
+
+.auth-card .subtitle {
+    margin-bottom: 20px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-field input {
+    padding: 10px 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    border: 1px solid #c9c3b8;
+    border-radius: 8px;
+    outline: none;
+}
+
+.form-field input:focus {
+    border-color: #c0392b;
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+}
+
+.form-error {
+    margin: 0;
+    color: #c0392b;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-notice {
+    color: #2e8b57;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.auth-switch {
+    margin: 18px 0 0;
+    color: #777;
+    font-size: 0.95rem;
+}
+
+.auth-card .btn {
+    text-decoration: none;
+    display: inline-block;
+}
+
+a {
+    color: #c0392b;
+}
+
+/* ---------- Gợi ý đăng nhập, lỗi lưu tiến độ ---------- */
+.login-hint {
+    margin-top: 18px;
+    color: #777;
+    font-size: 0.9rem;
+}
+
+.save-error {
+    margin: 12px 0 0;
+    color: #e67e22;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .nav-user {
+        max-width: 90px;
+    }
+
+    .navbar-inner {
+        gap: 8px;
+    }
+}

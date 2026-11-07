@@ -12,15 +12,17 @@ function shuffle(array) {
 }
 
 /**
- * Phiên luyện flashcard dùng chung cho Kanji và Từ vựng.
+ * Phiên luyện flashcard dùng chung cho Kanji, Từ vựng và các trang Ôn tập.
  *
  * Props:
- *  - cards:       mảng thẻ, mỗi thẻ có `id`
- *  - batchSize:   số thẻ mỗi nhóm
- *  - renderFront: (card) => nội dung mặt trước
- *  - renderBack:  (card) => nội dung mặt sau
- *  - onExit:      gọi khi bấm Thoát / Về menu
- *  - tall:        thẻ cao hơn (cho từ vựng có câu ví dụ)
+ *  - cards:        mảng thẻ, mỗi thẻ có `id`
+ *  - batchSize:    số thẻ mỗi nhóm
+ *  - renderFront:  (card) => nội dung mặt trước
+ *  - renderBack:   (card) => nội dung mặt sau
+ *  - onExit:       gọi khi bấm Thoát / Về menu
+ *  - onAnswer:     (card, remembered) => Promise, dùng để lưu tiến độ lên server (có thể bỏ trống)
+ *  - tall:         thẻ cao hơn
+ *  - shuffleCards: false để giữ nguyên thứ tự cards (trang ôn tập: quên nhiều nhất trước)
  */
 export default function PracticeSession({
     cards: sourceCards,
@@ -28,18 +30,21 @@ export default function PracticeSession({
     renderFront,
     renderBack,
     onExit,
+    onAnswer,
     tall = false,
+    shuffleCards = true,
 }) {
-    const [initial] = useState(() => shuffle(sourceCards));
+    const [initial] = useState(() => (shuffleCards ? shuffle(sourceCards) : [...sourceCards]));
 
-    const [allCards, setAllCards] = useState(initial);               // toàn bộ thẻ đã xáo
-    const [offset, setOffset] = useState(0);                          // số thẻ đã thuộc ở các nhóm trước
-    const [round, setRound] = useState(1);                            // vòng luyện trong nhóm
+    const [allCards, setAllCards] = useState(initial); // toàn bộ thẻ
+    const [offset, setOffset] = useState(0); // số thẻ đã thuộc ở các nhóm trước
+    const [round, setRound] = useState(1); // vòng luyện trong nhóm
     const [cards, setCards] = useState(() => initial.slice(0, batchSize)); // thẻ của vòng hiện tại
     const [index, setIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [knownCount, setKnownCount] = useState(0);
     const [unknown, setUnknown] = useState([]);
+    const [saveError, setSaveError] = useState(false);
 
     const startRound = useCallback((list, roundNo) => {
         setCards(list);
@@ -59,9 +64,9 @@ export default function PracticeSession({
     );
 
     const restart = () => {
-        const reshuffled = shuffle(sourceCards);
-        setAllCards(reshuffled);
-        startBatch(reshuffled, 0);
+        const again = shuffleCards ? shuffle(sourceCards) : [...sourceCards];
+        setAllCards(again);
+        startBatch(again, 0);
     };
 
     const finished = cards.length > 0 && index >= cards.length;
@@ -85,6 +90,14 @@ export default function PracticeSession({
     const mark = (isKnown) => {
         if (isKnown) setKnownCount((k) => k + 1);
         else setUnknown((u) => [...u, current]);
+
+        // Lưu tiến độ chạy nền, không bắt người học chờ
+        if (onAnswer) {
+            Promise.resolve(onAnswer(current, isKnown))
+                .then(() => setSaveError(false))
+                .catch(() => setSaveError(true));
+        }
+
         setFlipped(false);
         setIndex((i) => i + 1);
     };
@@ -114,9 +127,7 @@ export default function PracticeSession({
                     Chưa nhớ: <strong className="bad">{unknown.length}</strong>
                 </p>
 
-                {allKnown && (
-                    <p className="batch-info">Đã thuộc {learned} / {total}</p>
-                )}
+                {allKnown && <p className="batch-info">Đã thuộc {learned} / {total}</p>}
 
                 {!allKnown && (
                     <>
@@ -129,6 +140,10 @@ export default function PracticeSession({
                             ))}
                         </div>
                     </>
+                )}
+
+                {saveError && (
+                    <p className="save-error">⚠ Có tiến độ chưa lưu được, hãy kiểm tra kết nối mạng.</p>
                 )}
 
                 <div className="actions">
@@ -197,6 +212,8 @@ export default function PracticeSession({
                     <button className="btn btn-primary" onClick={flip}>Xem nghĩa</button>
                 )}
             </div>
+
+            {saveError && <p className="save-error">⚠ Chưa lưu được tiến độ, hãy kiểm tra kết nối mạng.</p>}
         </div>
     );
 }

@@ -42,7 +42,7 @@ export default function VocabListPage() {
             {!error && units && units.length > 0 && (
                 <div className="unit-list">
                     {units.map((u) => (
-                        <Link key={u.id} to={`/vocabulary/${u.id}`} className="menu-card unit-card">
+                        <Link key={u.code} to={`/vocabulary/${u.code}`} className="menu-card unit-card">
                             <h3>{u.title}</h3>
                             <p>{u.description}</p>
                             <span className="unit-count">{u.total} từ</span>

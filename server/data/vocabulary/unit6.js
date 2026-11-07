@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     id: "unit6",
     title: "Unit 6",
     description: "Tính từ chỉ đặc điểm, tính cách, màu sắc, thời tiết và cuộc sống hàng ngày",

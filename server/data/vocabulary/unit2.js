@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     id: "unit2",
     title: "Unit 2",
     description: "Địa điểm, hành động hằng ngày, thời gian và các ngày trong tuần",

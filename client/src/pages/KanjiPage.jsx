@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
+import { renderKanjiBack, renderKanjiFront } from "../components/cardViews";
 import PracticeSession from "../components/PracticeSession";
-
+import { LEVELS } from "../constants";
+import { useAuth } from "../context/AuthContext";
+import { useAnswerSaver } from "../hooks/useAnswerSaver";
 import { fetchKanji } from "../services/api";
 
 // Lấy cấp độ từ URL (/kanji/n5) rồi giao cho KanjiLevel.
@@ -9,12 +12,15 @@ import { fetchKanji } from "../services/api";
 export default function KanjiPage() {
     const { level } = useParams();
     const lv = (level || "").toUpperCase();
-    const LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+
     if (!LEVELS.includes(lv)) return <Navigate to="/kanji/n5" replace />;
     return <KanjiLevel key={lv} level={lv} />;
 }
 
 function KanjiLevel({ level }) {
+    const { user } = useAuth();
+    const saveAnswer = useAnswerSaver("kanji");
+
     const [data, setData] = useState(null); // null = đang tải
     const [practicing, setPracticing] = useState(false);
     const [error, setError] = useState("");
@@ -40,33 +46,9 @@ function KanjiLevel({ level }) {
                 batchSize={20}
                 tall
                 onExit={() => setPracticing(false)}
-                renderFront={(card) => <span className="kanji-big">{card.kanji}</span>}
-                renderBack={(card) => (
-                    <>
-                        {/* Phần đầu: kanji nhỏ + Hán Việt + nghĩa */}
-                        <span className="kanji-small">{card.kanji}</span>
-                        <span className="han-viet">{card.hanViet}</span>
-                        <span className="meaning">{card.meaning}</span>
-
-                        {/* Từ vựng đi kèm */}
-                        {card.vocabulary && (
-                            <div className="back-section">
-                                <span className="section-label">Từ vựng</span>
-                                <p className="vocab-line">{card.vocabulary}</p>
-                            </div>
-                        )}
-
-                        {/* Câu ví dụ */}
-                        {card.example && (
-                            <div className="back-section">
-                                <span className="section-label">Ví dụ</span>
-                                <p className="ex-jp">{card.example}</p>
-                                {card.romaji && <p className="ex-romaji">{card.romaji}</p>}
-                                {card.translation && <p className="ex-vi">{card.translation}</p>}
-                            </div>
-                        )}
-                    </>
-                )}
+                onAnswer={saveAnswer}
+                renderFront={renderKanjiFront}
+                renderBack={renderKanjiBack}
             />
         );
     }
@@ -96,6 +78,11 @@ function KanjiLevel({ level }) {
                     <button className="btn btn-primary btn-big" onClick={() => setPracticing(true)}>
                         Bắt đầu luyện tập
                     </button>
+                    {!user && (
+                        <p className="login-hint">
+                            <Link to="/login">Đăng nhập</Link> để lưu lại những chữ bạn chưa nhớ và ôn lại sau.
+                        </p>
+                    )}
                 </>
             )}
         </div>

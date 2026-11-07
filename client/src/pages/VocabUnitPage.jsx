@@ -1,22 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { renderVocabBack, renderVocabFront } from "../components/cardViews";
 import PracticeSession from "../components/PracticeSession";
+import { useAuth } from "../context/AuthContext";
+import { useAnswerSaver } from "../hooks/useAnswerSaver";
 import { fetchVocabUnit } from "../services/api";
 
-// Từ càng dài thì chữ càng nhỏ để vừa thẻ
-function wordSize(word) {
-    if (word.length <= 2) return "6rem";
-    if (word.length <= 4) return "4.5rem";
-    return "2.8rem";
-}
-
-// Trang /vocabulary/:unitId. Dùng key để đổi Unit là reset sạch trạng thái.
+// Trang /vocabulary/:unitCode. Dùng key để đổi Unit là reset sạch trạng thái.
 export default function VocabUnitPage() {
-    const { unitId } = useParams();
-    return <VocabUnit key={unitId} unitId={unitId} />;
+    const { unitCode } = useParams();
+    return <VocabUnit key={unitCode} unitCode={unitCode} />;
 }
 
-function VocabUnit({ unitId }) {
+function VocabUnit({ unitCode }) {
+    const { user } = useAuth();
+    const saveAnswer = useAnswerSaver("vocab");
+
     const [unit, setUnit] = useState(null); // null = đang tải
     const [practicing, setPracticing] = useState(false);
     const [error, setError] = useState("");
@@ -25,11 +24,11 @@ function VocabUnit({ unitId }) {
         try {
             setError("");
             setUnit(null);
-            setUnit(await fetchVocabUnit(unitId));
+            setUnit(await fetchVocabUnit(unitCode));
         } catch (err) {
             setError(err.message);
         }
-    }, [unitId]);
+    }, [unitCode]);
 
     useEffect(() => {
         load();
@@ -42,32 +41,9 @@ function VocabUnit({ unitId }) {
                 batchSize={10}
                 tall
                 onExit={() => setPracticing(false)}
-                renderFront={(w) => (
-                    <>
-                        {/* Không hiện hiragana nếu từ đã viết bằng hiragana (うち, いくら) */}
-                        {/* {w.hiragana !== w.word && (
-                            <span className="front-reading">{w.hiragana}</span>
-                        )} */}
-                        <span className="word-big" style={{ fontSize: wordSize(w.word) }}>
-                            {w.word}
-                        </span>
-                    </>
-                )}
-                renderBack={(w) => (
-                    <>
-                        {w.emoji && <span className="emoji">{w.emoji}</span>}
-                        {/* Không hiện lại nếu từ đã viết bằng hiragana (うち, いくら) */}
-                        {w.word !== w.hiragana && <span className="back-word">{w.word}</span>}
-                        <span className="reading">{w.hiragana}</span>
-                        <span className="romaji">{w.romaji}</span>
-                        <span className="meaning">{w.meaning}</span>
-                        <div className="example">
-                            <p className="ex-jp">{w.example.jp}</p>
-                            <p className="ex-romaji">{w.example.romaji}</p>
-                            <p className="ex-vi">{w.example.vi}</p>
-                        </div>
-                    </>
-                )}
+                onAnswer={saveAnswer}
+                renderFront={renderVocabFront}
+                renderBack={renderVocabBack}
             />
         );
     }
@@ -95,6 +71,11 @@ function VocabUnit({ unitId }) {
                     <button className="btn btn-primary btn-big" onClick={() => setPracticing(true)}>
                         Bắt đầu luyện tập
                     </button>
+                    {!user && (
+                        <p className="login-hint">
+                            <Link to="/login">Đăng nhập</Link> để lưu lại những từ bạn chưa nhớ và ôn lại sau.
+                        </p>
+                    )}
                 </>
             )}
         </div>

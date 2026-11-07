@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-
+import { LEVELS } from "../constants";
+import { useAuth } from "../context/AuthContext";
 import { fetchVocabUnits } from "../services/api";
 
 // Menu xổ xuống: rê chuột vào là hiện danh sách (trên điện thoại thì chạm để mở)
-// items: [{ to, label }]
+// items: [{ to, label, badge? }]
 function NavDropdown({ label, basePath, items, emptyText = "Chưa có dữ liệu" }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
@@ -52,7 +53,8 @@ function NavDropdown({ label, basePath, items, emptyText = "Chưa có dữ liệ
                             className={({ isActive }) => "dropdown-item" + (isActive ? " active" : "")}
                             role="menuitem"
                         >
-                            {item.label}
+                            <span>{item.label}</span>
+                            {item.badge > 0 && <span className="badge">{item.badge}</span>}
                         </NavLink>
                     ))}
                 </div>
@@ -62,6 +64,7 @@ function NavDropdown({ label, basePath, items, emptyText = "Chưa có dữ liệ
 }
 
 export default function Navbar() {
+    const { user, summary, logout } = useAuth();
     const [units, setUnits] = useState([]);
 
     // Lấy danh sách Unit từ server để hiện trong menu "Từ vựng"
@@ -71,16 +74,18 @@ export default function Navbar() {
             .catch(() => setUnits([]));
     }, []);
 
-    const LEVELS = ["N5", "N4", "N3", "N2", "N1"];
     const kanjiItems = LEVELS.map((level) => ({
         to: `/kanji/${level.toLowerCase()}`,
         label: level,
     }));
 
-    const vocabItems = units.map((u) => ({
-        to: `/vocabulary/${u.id}`,
-        label: u.title,
-    }));
+    const vocabItems = units.map((u) => ({ to: `/vocabulary/${u.code}`, label: u.title }));
+
+    const reviewItems = [
+        { to: "/review/kanji", label: "Kanji hay quên", badge: summary?.kanji.hard ?? 0 },
+        { to: "/review/vocab", label: "Từ vựng hay quên", badge: summary?.vocab.hard ?? 0 },
+    ];
+    const reviewTotal = (summary?.kanji.hard ?? 0) + (summary?.vocab.hard ?? 0);
 
     const linkClass = ({ isActive }) => "nav-link" + (isActive ? " active" : "");
 
@@ -101,7 +106,27 @@ export default function Navbar() {
                         items={vocabItems}
                         emptyText="Chưa có Unit nào"
                     />
+                    <NavDropdown
+                        label={
+                            <>
+                                Ôn tập {reviewTotal > 0 && <span className="badge">{reviewTotal}</span>}
+                            </>
+                        }
+                        basePath="/review"
+                        items={reviewItems}
+                    />
                 </nav>
+
+                <div className="nav-auth">
+                    {user ? (
+                        <>
+                            <span className="nav-user">{user.displayName || user.username || user.email}</span>
+                            <button type="button" className="btn btn-small" onClick={logout}>Đăng xuất</button>
+                        </>
+                    ) : (
+                        <NavLink to="/login" className={linkClass}>Đăng nhập</NavLink>
+                    )}
+                </div>
             </div>
         </header>
     );

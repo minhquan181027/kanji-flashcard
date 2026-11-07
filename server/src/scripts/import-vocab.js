@@ -6,7 +6,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, '..', 'data','vocabulary');
+const DATA_DIR = join(__dirname, '..', 'data', 'vocabulary');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -40,11 +40,19 @@ async function loadAllUnits() {
 async function importUnit(unit) {
   console.log(`\n📦 ${unit.id} - ${unit.title}`);
 
-  // 1. Upsert unit — FIX: chỉ rõ onConflict
+  // Lấy số thứ tự từ id (vd: "unit5" -> 5) để làm sort_order
+  const unitNumber = parseInt(unit.id.match(/\d+/)?.[0] || 0);
+
+  // 1. Upsert unit (Thêm sort_order)
   const { data: unitData, error: unitError } = await supabase
     .from('vocab_units')
     .upsert(
-      { code: unit.id, title: unit.title, description: unit.description ?? null },
+      {
+        code: unit.id,
+        title: unit.title,
+        description: unit.description ?? null,
+        sort_order: unitNumber
+      },
       { onConflict: 'code' }
     )
     .select('id')
@@ -52,6 +60,12 @@ async function importUnit(unit) {
 
   if (unitError) throw new Error(`Unit ${unit.id}: ${unitError.message}`);
   const unitId = unitData.id;
+
+  // Nếu unit không có từ vựng nào thì dừng lại
+  if (!unit.words || unit.words.length === 0) {
+    console.log(`⚠️ ${unit.id} không có từ vựng, bỏ qua.`);
+    return;
+  }
 
   // 2. Chuẩn bị words
   const wordsPayload = unit.words.map((word, index) => {
@@ -77,7 +91,7 @@ async function importUnit(unit) {
 
   const wordIdMap = new Map(wordsData.map(w => [w.word, w.id]));
 
-  // 4. DELETE + INSERT examples (FIX: không cần UNIQUE word_id)
+  // 4. DELETE + INSERT examples
   const wordIds = wordsData.map(w => w.id);
 
   const { error: delError } = await supabase
@@ -100,11 +114,14 @@ async function importUnit(unit) {
     })
     .filter(Boolean);
 
-  const { error: insError } = await supabase
-    .from('vocab_examples')
-    .insert(examplesPayload);
+  // Nếu không có ví dụ nào thì bỏ qua bước insert để tránh lỗi
+  if (examplesPayload.length > 0) {
+    const { error: insError } = await supabase
+      .from('vocab_examples')
+      .insert(examplesPayload);
 
-  if (insError) throw new Error(`Insert examples ${unit.id}: ${insError.message}`);
+    if (insError) throw new Error(`Insert examples ${unit.id}: ${insError.message}`);
+  }
 
   console.log(`✅ ${unit.words.length} từ, ${examplesPayload.length} ví dụ`);
 }
