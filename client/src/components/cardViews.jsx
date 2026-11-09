@@ -42,7 +42,7 @@ function wordSize(word) {
 export const renderVocabFront = (w) => (
     <>
         {/* Không hiện hiragana nếu từ đã viết bằng hiragana (うち, いくら) */}
-        {w.hiragana !== w.word && <span className="front-reading">{w.hiragana}</span>}
+
         <span className="word-big" style={{ fontSize: wordSize(w.word) }}>
             {w.word}
         </span>
