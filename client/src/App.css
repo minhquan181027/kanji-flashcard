@@ -757,3 +757,18 @@ a {
         gap: 8px;
     }
 }
+
+.front-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #aaa;
+}
+
+.meaning-big {
+    line-height: 1.3;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}

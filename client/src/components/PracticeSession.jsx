@@ -209,7 +209,7 @@ export default function PracticeSession({
                         <button className="btn btn-ok" onClick={() => mark(true)}>Đã nhớ</button>
                     </>
                 ) : (
-                    <button className="btn btn-primary" onClick={flip}>Xem nghĩa</button>
+                    <button className="btn btn-primary" onClick={flip}>Lật thẻ</button>
                 )}
             </div>
 
